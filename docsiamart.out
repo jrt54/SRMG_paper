@@ -8,7 +8,7 @@
 \BOOKMARK [2][-]{subsection.35}{Segmental Refinement: Solving on Subdomains}{section.5}% 8
 \BOOKMARK [1][-]{section.40}{Results}{}% 9
 \BOOKMARK [2][-]{subsection.41}{Accuracy of Method}{section.40}% 10
-\BOOKMARK [1][-]{section.50}{Analysis Revisited: Iterative SRMG failure}{}% 11
+\BOOKMARK [1][-]{section.50}{Concluding Analysis}{}% 11
 \BOOKMARK [2][-]{subsection.51}{Poisson's Equation on Subdomains}{section.50}% 12
 \BOOKMARK [2][-]{subsection.54}{Domain Decomposition}{section.50}% 13
 \BOOKMARK [2][-]{subsection.59}{Recursive SRMG}{section.50}% 14

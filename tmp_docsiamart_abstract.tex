@@ -1,0 +1,11 @@
+\begin{abstract}
+	In traditional multigrid, the number of unknowns on refined domains can create a memory bottleneck. The memory requirements can also reduce the efficiency of the algorithm due to the communication required between cores. I analyze Segmental Refinement Multigrid (SRMG) a modification to multigrid methods that reduces communication and has logarithmic scaling memory complexity. While previous work has been done on this method, and there have been earlier implementations, they all failed to converge on an arbitrary number of levels. My work provides a theoretical analysis and practical implementation demonstrating the root cause of SRMG's previous failures was due to the underlying low-communication mechanisms of the algorithm. My concluding analysis demonstrates future potential for SRMG, although it imposes requirements that could not be met by the implementation accompanying this work.
+\end{abstract}
+
+\begin{keywords}
+ Multigrid, Segmental Refinement
+\end{keywords}
+
+\begin{AMS}
+ \textbf{Lookup comp math}
+\end{AMS}
