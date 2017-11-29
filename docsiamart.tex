@@ -633,7 +633,8 @@ Here the $L_1$ error was calculated against the true solution $u = \sin{2\pi y}\
 
 This implementation of SRMG could not consistently achieve error reduction on levels beyond the first level of SRMG, regardless of buffer size, coarse resolution, or number of levels. 
 
-\section{Analysis Revisited: Iterative SRMG failure}
+\section{Concluding Analysis}
+%\section{Concluding Analysis: Iterative SRMG failure}
 The underlying assumptions of SRMG require that subsequent levels generate higher-frequency approximations of the true solution. However, low-frequency errors coming from the first level of SRMG seemed to propagate into the interior of all subpatches generated at later levels.  
 
 A new, more careful analysis was done with this problem in mind, leading to a new condition for iterative SRMG.
