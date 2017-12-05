@@ -259,7 +259,7 @@ By 1982, Multigrid was an accepted numerical algorithm for solving elliptic equa
    
 
 \section{Methodology}\label{sec:method}
-\subsection{Theoretical Justification}
+\subsection{Model Problem}
 %    ({\bf MGK:} The notation much be unified in the whole document. Will you use $u$ or $\Phi$ as the unknown? What notation for the Laplacian?)
 Consider Poisson's equation on the domain $[0, 1]$ x $[0, 1]$
 
@@ -593,7 +593,7 @@ Therefore, with a very simple modification, we can use the same method to solve 
 
 The coarse resolution was set at $N_0 = 10$
 
-$L_1$ error was computed with a ten-point Gaussian Quadrature on each patch. This error was summed up over all of the patches corresponding to a given level to achieve a total metric for $L_1$ error.  
+$L_1$ error was computed with a ten-point Gaussian Quadrature on each patch. Each patch's $L_1$ error was summed up over all of the patches corresponding to a given level to achieve a total metric for $L_1$ with respect to a given level.  
 
 
 
@@ -601,14 +601,10 @@ Here the $L_1$ error was calculated against the true solution $\sin{2\pi x}\sin{
 
 %\begin{figure}[!htb]
 \begin{figure}[h]
-\minipage{0.48\textwidth}
-  \includegraphics[width=\linewidth]{convergencechebsinsin.png}
-  \caption{Error via Boyd box function plateus or increases after level 1}
-\endminipage\hfill
-\minipage{0.48\textwidth}%
-  \includegraphics[width=\linewidth]{convergencefouriersinsin.png}
-  \caption{Error via sinhsin box function plateus or increases after level 1}
-\endminipage
+\begin{center}
+  \includegraphics[scale=.5]{convergencechebsinsin.png}
+  \caption{Error plateus or increases after level 1}
+\end{center}
 \end{figure}
 
 
@@ -616,18 +612,10 @@ Here the $L_1$ error was calculated against the true solution $\sin{2\pi x}\sin{
 Here the $L_1$ error was calculated against the true solution $u = \sin{2\pi y}\frac{\sinh{2 \pi (x-1)} }{\sinh{4\pi}}$
 
 \begin{figure}[H]
-% \minipage{0.48\textwidth}
-%   \includegraphics[width=\linewidth]{coarsevsn.png}
-%   %\caption{A really Awesome Image}\label{fig:awesome_image1}
-% \endminipage\hfill
-\minipage{0.48\textwidth}
-  \includegraphics[width=\linewidth]{convergencechebsinhsin.png}
-  \caption{Error via Boyd box function plateus or increases after level 1}
-\endminipage\hfill
-\minipage{0.48\textwidth}%
-  \includegraphics[width=\linewidth]{convergencefouriersinhsin.png}
-  \caption{Error via sinhsin box function plateus or increases after level 1}
-\endminipage
+\begin{center}
+  \includegraphics[scale=.5]{convergencechebsinhsin.png}
+  \caption{Error plateus or increases after level 1}
+\end{center}
 \end{figure}
 
 
@@ -775,6 +763,8 @@ Then an overlapping domain decomposition is formed as follows
 
 $\{ \Omega^{1}_1, \Omega^{1}_2, \Omega^{1}_3, \Omega^{1}_4 \} = \{[0,  .5 + \epsilon] \times [0, .5 + \epsilon] ; [.5-\epsilon, 1] \times  [0, .5+\epsilon] ; [0, .5+\epsilon] \times  [.5-\epsilon, 1] ; [.5-\epsilon, 1] \times  [.5-\epsilon, 1] \}$
 
+
+
 \begin{tikzpicture}
 \draw (0,0) -- (4,0) -- (4,4) -- (0,4) -- cycle;
 \draw[blue,thick,dashed] (0,0) -- (2.25,0) -- (2.25,2.25) -- (0,2.25) -- cycle;%[0,2]^2
@@ -790,7 +780,7 @@ $\{ \Omega^{1}_1, \Omega^{1}_2, \Omega^{1}_3, \Omega^{1}_4 \} = \{[0,  .5 + \eps
 
 
 
-A set of 4 solutions $u^{(1)}_i$ is constructed on each patch satisfying the following system of equations on a corresponding subdomain  $\Omega^{(1)}_i$
+A set of 4 solutions $\{ u^{(1)}_1, u^{(1)}_1, u^{(1)}_1, u^{(1)}_1 \} $  is constructed on each patch satisfying the following system of equations on a corresponding subdomain  $\Omega^{(1)}_i$
 
 \begin{gather}
   \bigtriangleup u^{(1)}_i = f \nonumber \\
@@ -854,70 +844,6 @@ This contradicts one of our fundamental requirements of SRMG, that high-frequenc
 %Therefore the pointwise error induced on any subpatch can only be reduced by reducing error on the first level of SRMG in the patch $\Omega^{(1)}_i$ that contains the subpatch corresponding to $\Omega^{(l)}_j$. %Reducing the error on the first level of SRMG can only be done by increasing the first-level buffer region or the coarse resolution.
 
 %However, note that we have the same guarantees about the decay of error as described in previous sections. Although the pointwise error on a subdomain can't be reduced by refinement or choice of solver, we can still get stronger convergence guarantees on later patches by assuring a buffer that grows. 
-
-
-
-\subsection{Multi-level Error Analysis}
-In the previous section, we studied the analytical solution to patches governed by a PDE with artificially imposed boundary conditions coming from a previous level of Segmental Refinement. 
-
-Let us be more precise and consider that each patch also employs approximation error.
-
-For simplicity, consider Poisson's equation $\bigtriangleup u = f$ with zero boundary value conditions on the full domain, so that any approximation or patch encodes the true boundary values where its domain  intersects with the boundary of the full domain. %In practice, we could replicate this phenomenon by decoupling the conditions. 
-
-Let $u^{(l)}_j$ be the solution to the imposed patch PDE on the subdomain $\Omega^{l}_j$ (\ref{patchpdel}). 
-
-The generated approximation of $u^{(1)}_j$ depends on the method used to solve the PDE, which, in general, will not be an analytic or exact solution to the boundary conditions or the forcing condition. 
-
-We deem the generated approximation to a patch PDE $\tilde{u}^{(l-1)}_j$ and note that the ensuing subpatches approximate the true solution to a modified PDE \ref{patchpdel} as follows:
-
-\begin{gather*}
-  \bigtriangleup u^{(l)}_i = f  \\
-  \begin{split}
-    u^{(l)}_i = \tilde{u}^{(l-1)}_j \in \partial (\Omega^{l}_i) 
-  \end{split}
-\end{gather*}
-
-
-Let $\tilde{e}^{(0)} = \tilde{u}^{(0)} - u$ be the 
-error of the coarse approximation, which is used to impose a new PDE on artificially imposed boundary.
-
-%The coarse error has a simple expression $\tilde{e}^{(0)} = \tilde{u}^{(0)} - u = \tilde{e}^{0}$
-
-
-%\subsection{Recursive Error Analysis}
-
-Let $\tilde{e}^{(1)}_j = \tilde{u}^{(1)}_j - u^{(1)}_j$ be the error between the true solution to the artificially imposed PDE and the generated approximation to this artificially imposed PDE. 
-
-Recall the error between the true solution to the imposed patch PDE and the true solution on the full domain is given by: $e^{(1)}_j = u^{(1)}_j - u$.
-
-The 1st level of SRMG generates errors of the following form:
-
-$\tilde{u}^{(1)}_j - u = (\tilde{u}^{(1)}_j - u^{(1)}_j) + (u^{(1)}_j -  u) = e^{(1)}_j + \tilde{e}^{(1)}_j $
-
-
-To study the error induced by SRMG on later levels, note that the mechanics of SRMG and uniqueness of Poisson's equation guarantee that the true solution to the artificial PDE imposed on each patch satisfies boundary conditions corresponding to the parent patch's approximation. That is: $u^{(l)}_i = \tilde{u}^{(l-1)}_j$ on the boundaries. 
-
-So on a patch's boundary $\Omega^{l}_i$, we have:
-
-\begin{align*}
-\tilde{u}^{(l)}_i - u &=  (\tilde{u}^{(l)}_i - u^{(l)}_i) + (u^{(l)}_i - u) = \tilde{e}^{(l)}_i + e^{(l)}_i \\
-&= \tilde{e}^{(l)}_i + (u^{(l)}_i - u) = \tilde{e}^{(l)}_i + (\tilde{u}^{(l-1)}_j - u) \\
-& = \tilde{e}^{(l)}_i + (\tilde{u}^{(l-1)}_j - u^{(l-1)}_j) + (u^{(l-1)}_j - u) = \tilde{e}^{(l)} + \tilde{e}^{(l-1)} +  e^{(l-1)}\\
-& ... \\
-& = \sum_{k=0}^l \tilde{e}^{(k)} + e^{(0)} \\
-\end{align*}
-
-On any patch and any level of SRMG, we can therefore express the error $\tilde{u}^{(l)}_i - u$, as a solution to a PDE where $\tilde{f}^{(l)}_i = \bigtriangleup \tilde{u}^{(l)}$, is a discretization or approximation of the forcing condition, which is not induced by parent patches but extracted from the true PDE: 
-
-\begin{gather*}
- \bigtriangleup (\tilde{u}^{(l)}_i - u) =  \tilde{f}^{(l)}_i - f  \\
-  \begin{split}
-    \tilde{u}^{(l)}_i - u = \sum_{k=0}^l \tilde{e}^{(k)} + e^{(0)}\in \partial \Omega^{(l)}_{i_l} \label{errorrevisited}
-  \end{split}
-\end{gather*}
-
-It is clear from this analysis that the error induced by boundaries in the first level of SRMG does indeed have an effect on all subsequent patches. Refinement does nothing to eliminate this error or restrict it to higher frequencies. 	
-
 
 
 \subsection{Error Analysis Revisited}
