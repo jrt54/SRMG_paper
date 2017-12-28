@@ -113,27 +113,20 @@
   \thanks{Submitted to the editors DATE.
 \funding{Funding information goes here.}}}
 
-\author{Dianne Doe%
-  \thanks{Imagination Corp., Chicago, IL (\email{ddoe@imag.com}).}%
-  \and
-  Paul T. Frank%
-  \thanks{Department of Applied Math, Fictional University, Boise, ID
-    (\email{ptfrank@fictional.edu}, \email{jesmith@fictional.edu}).}
-  \and
-  Jane E. Smith%
-  \footnotemark[3]
+\author{Jeremy Tillay%
+  \thanks{Computational and Applied Mathematics, Rice University, Houston, TX (\email{jrt5493@gmail.com}).}%
 }
 
 % Custom SIAM macro to insert headers
-\headers{Guide to Using  SIAM'S \LaTeX\ Style}
-{Dianne Doe, Paul T. Frank, and Jane E. Smith}
+\headers{Analysis of Segmental Refinement Multigrid}
+{Jeremy Tillay}
 \end{tcbverbatimwrite}
 \input{tmp_\jobname_header.tex}
 
 % Optional: Set up PDF title and authors
-\ifpdf
-\hypersetup{ pdftitle={Guide to Using  SIAM'S \LaTeX\ Style} }
-\fi
+% \ifpdf
+% \hypersetup{ pdftitle={Guide to Using  SIAM'S \LaTeX\ Style} }
+% \fi
 
 %% ------------------------------------------------------------------
 %% END HEADING INFORMATION
@@ -235,10 +228,9 @@ Consider Poisson's equation on the domain $[0, 1]$ x $[0, 1]$
 % \begin{align}\label{eq:Poisson}
 %  \bigtriangleup u = f
 % \end{align}
-We can attempt to solve this problem numerically using multigrid. 
 
     %Suppose we used a second-order discretization and an exact (e.g. spectral) solver.     
-Discretizing (\ref{eq:Poisson}) by a spectral method and solving using a multigrid method yields an approximate solution with a Fourier representation that is accurate up to the first $k$ modes. To increase the value of this $k$, one can solve on a more refined grid using the approximation generated on a coarse grid as an initial guess for the solution on the refined discretization. 
+Discretizing (\ref{eq:Poisson}) by a spectral method and solving using a multigrid method yields an approximate solution with a Fourier representation that is accurate up to the first $N_0$ modes. To increase the value of this $N_0$ one can solve on a more refined grid using the approximation generated on a coarse grid as an initial guess for the solution on the refined discretization. 
 
 We consider a modification of multigrid: segmental refinement, which solves for the refined domain by locally solving on patches of an overlapping decomposition of the domain. 
 
@@ -271,9 +263,9 @@ Consider in specific the patch solution $u^{(1)}$ generated on the lower left pa
   \end{split}
 \end{gather}
 
-Let the error between the true solution and the coarse solution be given by $E^{(0)}(x, y) = u^{(0)}(x, y) - u(x, y)$
+Let $E^{(0)}(x, y) = u^{(0)}(x, y) - u(x, y)$ be the error of the coarse approximation. 
 
-We can therefore analyze the error on this lower left patch, $E^{(1)}(x, y) = u^{(1)}(x, y) - u(x, y)$, resulting from this first SRMG decomposition  by expressing it as a solution to the following PDE: 
+We can therefore analyze the error on the refined lower left patch, $E^{(1)}(x, y) = u^{(1)}(x, y) - u(x, y)$, resulting from this first SRMG decomposition by expressing it as a solution to the following PDE: 
 
 \begin{gather}
   \bigtriangleup  {E}^{(1)}(x,y) = \bigtriangleup u^{(1)} - \bigtriangleup u = f - f = 0 \\
@@ -330,13 +322,18 @@ and we see that the exponential decay away from the boundary is also exponential
 
 
 %For our solution procedure, we assume that we obtain the exact solution on an initial coarse grid of size $n_0$. Further assume that each quarter of the domain encodes components corresponding to $n_0$ frequencies exactly.  
-For our solution procedure, we assume that we obtain the solution on an initial coarse grid to remove any low-frequency errors. Thus along any artificial boundary of some form analogous to $y \in [0, L]$ and $x = L$ we have accuracy in the first $N_0$ Fourier components. That is the error corresponding to each wavefrequency, (\ref{errorinfreq}) is 0 for $n \leq N_0$.
 
-Further assume that each quarter of the domain contains $N_0 \times N_0$ unknowns. 
+Assume the following: 
+\begin{itemize}
+\item The error corresponding to each wavefrequency, (\ref{errorinfreq}) is 0 for $n \leq N_0$.
+\item Each patch contains $N_0 \times N_0$ unknown on a subdomain of area $L \times L$ 
+\end{itemize} 
 
-We will number each grid starting with $l = 0$ for this coarsest grid. 
+The first assumption is motivated by the mechanics of multigrid, which eliminates low-frequency errors with coarse approximations. 
 
-If we use a second order method for solving each finite-resolution patch, then the discretization error \footnote{To clarify any ambiguity, here our second order discretization error is defined as second order with respect to the distance between points or number of unknowns per unit area on a boundary, not cell size, which would actually be$(\frac{1}{k})^4$ . This is a trivial difference because the additional needed buffer size would at most double, or we could achieve this by doubling the coarse-solve accuracy $n_0$} at each level is $C_D \left(\frac{1}{2^l n_0}\right)^2$ for some constant $C_D$. If we double the resolution of our initial grid in each direction, but divide it into four patches, then at level $l = 1$ we have $L = \frac{1}{2}$ \footnote{Technically, SRMG must create a buffer zone, so $L = \frac{1}{2} + \epsilon$. We disregard this detail in the analysis provided here. }.
+We will number each grid starting with $l = 0$ for the coarsest grid. 
+
+If we use a second order method for solving each finite-resolution patch, then the discretization error \footnote{To clarify any ambiguity, here our second order discretization error is defined as second order with respect to the distance between points or number of unknowns per unit area on a boundary, not cell size, which would actually be$(\frac{1}{k})^4$} at each level is $C_D \left(\frac{L}{N_0}\right)^2$ for some constant $C_D$. If we double the resolution of our initial grid in each direction, but divide it into four patches, then at level $l = 1$ we have $L = \frac{1}{2}$ \footnote{Technically, SRMG must create a buffer zone, so $L = \frac{1}{2} + \epsilon$. We disregard this detail in the analysis provided here. }.
 
 
 
@@ -366,11 +363,11 @@ Since later levels of SRMG may generate subpatches with up to four artificial bo
  \implies  d_1 &> \frac{\ln(C) - \ln(C_D) + (4+3) \ln(2) + 3 \ln(N_0)}{2^1 N_0 \pi}. 
 \end{align}
 
-This way, we can guarantee second-order discretization error on each patch. This is the same guarantee given by a second-order finite difference method, and multigrid with a finite difference discretization still eliminates low-frequency errors using the coarser grids. 
+% We can guarantee second-order discretization error on each patch by imposing a buffer large enough such that the distance between the boundary and the interior of the patch is larger than $d_1$. 
 
-We continue to assume that refining each patch before quartering assures that each subpatch is generated with higher-frequency accuracy. We interpret this as an initial approximation on on all four subpatches that is exact up to the first $N_0$ components of the true Fourier representation of the given subpatch's boundary. That is (\ref{errorinfreq}) is still 0 for $n \leq N_0$, but L has shrunken, meaning the expression for the boundary-imposed error decays faster. 
+% Second-order discretization error is the same guarantee given by a second-order finite difference method, and multigrid with a finite difference discretization still eliminates low-frequency errors using the coarser grids. Therefore, we continue to assume that refining each patch before quartering assures that each subpatch is generated with higher-frequency accuracy. We interpret this as an initial approximation on on all four subpatches that is exact up to the first $N_0$ components of the true Fourier representation of the given subpatch's boundary. That is (\ref{errorinfreq}) is still 0 for $n \leq N_0$, but L has shrunken, meaning the expression for the boundary-imposed error decays faster. 
 
-On level $l$, let $d_l$ refer to the distance requirement at $l$ levels from the coarsest grid in order to have the error imposed by artificial boundaries decay to discretization error with respect to the given refinement. We assume that each level of SRMG is performed by first doubling the resolution of each patch, then quartering the domain. Note that this means discretization error on a patch at level $l$ is given by $\frac{C_D}{2^l N_0}$
+On level $l$, let $d_l$ refer to the distance from the patch's boundary such that the error imposed by artificial boundaries decays to discretization error with respect to the given refinement. We assume that each level of SRMG is performed by first doubling the resolution of each patch, then quartering the domain. Note that this means discretization error on a patch at level $l$ is given by $\frac{C_D}{2^l N_0}$
 
 We can derive a requirement for $d_l$ of the following form
 
@@ -381,23 +378,22 @@ We can derive a requirement for $d_l$ of the following form
   d_l &> \frac{\ln(C) - \ln(C_D) + (4+3l) \ln(2) + 3 \ln(N_0)}{2^l N_0 \pi} \label{singlebuffer}
 \end{align}
 
-The sum $d = \sum^\infty_{l=1} d_l$ converges. This means that a finite but suitably large buffer zone around the initial coarse patches will guarantee convergence of the method on all subsequent levels. Of course, we need that $d < 1/2$ and
-ideally much less, but we can achieve this by raising $N_0$, the initial grid refinement. For implementation, we are
-concerned with $\overline d_l$, the total buffer needed at level $l$ which would allow convergence on all subsequent patches. 
+The sum $d = \sum^\infty_{l=1} d_l$ converges. This means that a finite but suitably large buffer zone around the initial coarse patches will guarantee convergence of the method on all subsequent levels. Of course, we need that $d < 1/2$ and ideally much less, but we can achieve this by increasing $N_0$, the initial grid refinement. 
+For implementation, we are concerned with $\overline d_l$, the total buffer needed at level $l$ which would allow convergence on all subsequent patches should further levels of SRMG be performed. 
 
 
 \begin{align}
   \overline d_l &= \sum^\infty_{m=l} d_m \nonumber \\
  &> \sum^\infty_{m=l} \frac{\ln(C) - \ln(C_D) + 4 \ln(2) + 3 \ln(N_0)}{2^m N_0 \pi} + \frac{3m \ln(2)}{2^m N_0 \pi}, \nonumber \\
  &> \frac{\ln(C) - \ln(C_D) + 4 \ln(2) + 3 \ln(N_0)}{2^{l-1} N_0 \pi} + \frac{3 (l+1) \ln(2)}{2^{l-1} N_0 \pi} \label{bufferreq}
-\end{align}
+ \end{align}
 
-so the number of cells $c_l = \overline d_l 2^l$ required in the buffer in each direction is
-\begin{align*}
-  c_l = 2 \frac{\ln(C) - \ln(C_D) + (7+3l) \ln(2) + 3 \ln(N_0)}{N_0 \pi},
-\end{align*}
-which means at each level we must increase the number of cells by a constant, but the overall distance from the boundary
-remains constant.
+% so the number of cells $c_l = \overline d_l 2^l$ required in the buffer in each direction is
+% \begin{align*}
+%   c_l = 2 \frac{\ln(C) - \ln(C_D) + (7+3l) \ln(2) + 3 \ln(N_0)}{N_0 \pi},
+% \end{align*}
+% which means at each level we must increase the number of cells by a constant, but the overall distance from the boundary
+% remains constant.
 
 In summary, we require that the solution perturbation, driven by high-frequency errors in the artificially imposed boundary conditions, decays to discretization error within some distance $d_l$ away from the patch boundary, where $l$ is the level index for the patch. Continuing this process recursively  by allowing an additional buffer of size $d_l$ for each level, we can show that segmental refinement at each level finds solutions to a PDE up to discretization error. This is the same guarantee offered by traditional multigrid with a finite difference method. 
 
