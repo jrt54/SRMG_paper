@@ -109,17 +109,19 @@
 %% HEADING INFORMATION
 %% ------------------------------------------------------------------
 \begin{tcbverbatimwrite}{tmp_\jobname_header.tex}
-\title{Guide to Using SIAM's \LaTeX\ Style%
-  \thanks{Submitted to the editors DATE.
-\funding{Funding information goes here.}}}
-
-\author{Matthew Knepley, Jeremy Tillay%
-  \thanks{Computational and Applied Mathematics, Rice University, Houston, TX (\email{jrt5493@gmail.com}).}%
+\title{Analysis of Segmental Refinement Multigrid} 
+\author{Jeremy Tillay%
+  \thanks{Computational and Applied Mathematics, Rice University, Houston, TX (\email{jrt5493@gmail.com}).} 
+  \and 
+  {Matthew Knepley%
+  \thanks{Department of Computer Science and Engineering, University at Buffalo}
+  } %
 }
 
 % Custom SIAM macro to insert headers
-\headers{Analysis of Segmental Refinement Multigrid}
-{Jeremy Tillay}
+%\headers{Guide to Using SIAM’S \LaTeX\ Style}
+%{Dianne Doe, Paul T. Frank, and Jane E. Smith}
+\headers{Analysis of Segmental Refinement Multigrid}{Jeremy Tillay, Matthew Knepley}
 \end{tcbverbatimwrite}
 \input{tmp_\jobname_header.tex}
 
@@ -137,7 +139,7 @@
 %% ------------------------------------------------------------------
 \begin{document}
 
-%\maketitle
+\maketitle
 
 
 %% ------------------------------------------------------------------
@@ -145,7 +147,7 @@
 %% ------------------------------------------------------------------
 \begin{tcbverbatimwrite}{tmp_\jobname_abstract.tex}
 \begin{abstract}
-	In traditional multigrid, the number of unknowns on refined domains can create a memory bottleneck. The memory requirements can also reduce the efficiency of the algorithm due to the communication required between cores. I analyze Segmental Refinement Multigrid (SRMG) a modification to multigrid methods that reduces communication and has logarithmic scaling memory complexity. While previous work has been done on this method, and there have been earlier implementations, they all failed to converge on an arbitrary number of levels. My work provides a theoretical analysis and practical implementation demonstrating the root cause of SRMG's previous failures was due to the underlying low-communication mechanisms of the algorithm. My concluding analysis demonstrates future potential for SRMG, although it imposes requirements that could not be met by the implementation accompanying this work. 
+	In traditional multigrid, the number of unknowns on refined domains can create a memory bottleneck. The memory requirements can also reduce the efficiency of the algorithm due to the communication required between cores. We analyze Segmental Refinement Multigrid (SRMG) a modification to multigrid methods that reduces communication and has logarithmic scaling memory complexity. While previous work has been done on this method, and there have been earlier implementations, they all failed to converge on an arbitrary number of levels. My work provides a theoretical analysis and practical implementation demonstrating the root cause of SRMG's previous failures was due to the underlying low-communication mechanisms of the algorithm. My concluding analysis demonstrates future potential for SRMG, although it imposes requirements that could not be met by the implementation accompanying this work. 
 \end{abstract}
 
 \begin{keywords}
@@ -153,7 +155,7 @@
 \end{keywords}
 
 \begin{AMS}
- \textbf{JRT: Lookup comp math}
+65M55
 \end{AMS}
 \end{tcbverbatimwrite}
 \input{tmp_\jobname_abstract.tex}
@@ -172,26 +174,35 @@
   Here we study a low-memory modification of multigrid methods, which are a class of methods for
 solving partial differential equations. This modified multigrid method, Segmental Refinement (SRMG) \cite{brandt1994multigrid}, reduces concurrent memory requirements by creating an overlapping domain decomposition and independently solving the partial differential equation on each subset of the domain. Error imposed by this method exists only in the overlapping region, or buffer region, and requires only modest additional computation in the redundant overlap between domains. This overlapping decomposition is the reason SRMG has logarithmic scaling memory requirements rather than the linear scaling memory requirements of traditional multigrid.
     
+% \begin{wrapfigure}{r}{0.4\textwidth}
+%   \begin{center}
+%     \includegraphics[scale=0.4]{sketchsr.pdf}
+%   \end{center}%
+%   \caption{\footnotesize{Significant error is constrainted to triangular black points}}
+% \end{wrapfigure}
+
+
 \begin{wrapfigure}{r}{0.4\textwidth}
   \begin{center}
-    \includegraphics[scale=0.4]{sketchsr.pdf}
+    \includegraphics[scale=0.4]{errorsrmg.png}
   \end{center}
-  \caption{\textbf{JRT:Get better picture} \footnotesize{Significant error is constrainted to triangular black points}}
+  \caption{\footnotesize{Significant error (\textcolor{red}{red}) decays as we move from the boundary }}
 \end{wrapfigure}
-
 
 	Previous analysis and implementation demonstrated that SRMG converged for a fixed number of levels \cite{paper1}, but my work attempts to demonstrate that convergence holds for any number of levels of SRMG, so long as each level eliminates low-frequency error and further levels maintain this high-frequency accuracy. 
     
-	There are two unanswered questions regarding SRMG. One is whether we have convergence guarantees in spite of communication no longer occuring between patches.  I show error induced by no longer communicating with the entire domain is localized and does not extend past the buffer regions of the domain decomposition. 
+	There are two unanswered questions regarding SRMG. One is whether we have convergence guarantees in spite of communication no longer occuring between patches.  We show error induced by no longer communicating with the entire domain is localized and does not extend past the buffer regions of the domain decomposition. 
     
-	The second question is whether SRMG converges on an arbitrary number of refinement levels. I demonstrate a set of requirements which, when satisfied, guarantee convergence on an arbitrary number of levels. I accompanied my analysis by implementing the method with a spectral solver, to investigate the feasibility of these requirements. 
+	The second question is whether SRMG converges on an arbitrary number of refinement levels. We demonstrate a set of requirements which, when satisfied, guarantee convergence on an arbitrary number of levels. We accompanied my analysis by implementing the method with a spectral solver, to investigate the feasibility of these requirements. 
     %but I demonstrate that if one is careful to account for modest param
     
 
 \section{Background}\label{sec:backg}
-By 1982, Multigrid was an accepted numerical algorithm for solving elliptic equations \cite{earlymulti}. The speed at which multigrid solves large problems is the primary reason for its use. One of the problems with multigrid, as well as many other numerical algorithms, is that memory requirements scales linearly. 
+%By 1982, Multigrid was an accepted numerical algorithm for solving elliptic equations \cite{earlymulti}. 
+
+The speed at which multigrid solves large problems is one of its primary strengths. One of the problems with multigrid, as well as many other numerical algorithms, is that memory requirements scales linearly. Implementing multigrid on modern large-scale computer architectures also imposes communication requirements which can negatively impact its speed. SRMG was a proposed modification to multigrid that would remedy these issues. 
    
-    Models of this SRMG algorithm were presented in detail as early as 1994 \cite{brandtdiskin}. However, there is still debate over what conditions must be met for the algorithm to guarauntee  multi-level convergence. One question that had been left unanswered by previous research is whether Segmental Refinement can be performed an arbitrary number of times to yield arbitrarily small error. \cite{paper1}. 
+    Models of the SRMG algorithm were presented in detail as early as 1994 \cite{brandtdiskin}. However, there is still debate over what conditions must be met for the algorithm to guarauntee  multi-level convergence. One question that had been left unanswered by previous research is whether Segmental Refinement can be performed an arbitrary number of times to yield arbitrarily small error. \cite{paper1}. 
 
 	There has been proof of convergence via segmental refinement with a fixed number of levels. However this proof is unaccompanied by numerical implementation on any specific differential equations and lacks strong evidence that unlimited levels of SRMG are possible \cite{brandtdiskin}. The theory  presented showed that error induced by one level of SRMG decays within the buffer region of each subdomain, but did not demonstrate that a buffer region of fixed size can still allow further levels of SRMG  without eventually inducing errors on the highest-resolution domains. However, this was an early work and still served to demonstrate that this algorithm had a potential use in reducing communication complexity during the last few stages of refinement when performing multigrid. In and of itself, this provided a significant, powerful use. Yet, it left unanswered the full potential of SRMG.
     
@@ -204,7 +215,7 @@ By 1982, Multigrid was an accepted numerical algorithm for solving elliptic equa
     
     My work builds upon this body of previous work by approaching the analysis of the algorithm from a new perspective, showing that convergence depends on the frequency of accuracy on the coarsest level. In order for SRMG to be effective, one must eliminate all low-frequency errors on coarser patches. This high-frequency accuracy requirement motivated the implementation of a spectral method coupled with SRMG to investigate the convergence of SRMG. Spectral solvers allow exact interpolation via injection, eliminating at least one possible source of low-frequency error: interpolation error. 
     
-    Even when eliminating the possibility of interpolation error, convergence failed. There were many possible causes, including aliasing error. I performed a second, more abstract analysis in light of these results, which explored convergence without considering any specific solver, interpolation operator, or restriction operator. Error induced by the first set of artificial boundary conditions, which is imposed on patches generated the first level of SRMG, cannot not be eliminated by refinement, only by increasing coarsest resolution or buffer size.
+    Even when eliminating the possibility of interpolation error, convergence failed. There were many possible causes, including aliasing error. We performed a second, more abstract analysis in light of these results, which explored convergence without considering any specific solver, interpolation operator, or restriction operator. Error induced by the first set of artificial boundary conditions, which is imposed on patches generated the first level of SRMG, cannot not be eliminated by refinement, only by increasing coarsest resolution or buffer size.
     
     % than would be necessary for my proposed modifications.
     
@@ -394,7 +405,7 @@ For implementation, we are concerned with $\overline d_l$, the total buffer need
 % which means at each level we must increase the number of cells by a constant, but the overall distance from the boundary
 % remains constant.
 
-In summary, we require that the solution perturbation, driven by high-frequency errors in the artificially imposed boundary conditions, decays to discretization error within some distance $d_l$ away from the patch boundary, where $l$ is the level index for the patch. Continuing this process recursively  by allowing an additional buffer of size $d_l$ for each level, we can show that segmental refinement at each level finds solutions to a PDE up to discretization error. This is the same guarantee offered by traditional multigrid with a finite difference method. 
+In summary, we require that the solution perturbation, driven by high-frequency errors in the artificially imposed boundary conditions, decays to discretization error within some distance $d_l$ away from the patch boundary, where $l$ is the level index for the patch. Continuing this process recursively  by allowing an additional buffer of size $d_l$ for each level, we can show that segmental refinement at each level finds solutions to a PDE within discretization error. This is the same guarantee offered by traditional multigrid with a finite difference method. 
 
 Since the infinite sequence $\{d_l\}$is summable, a finite buffer $\sum_{i=1}^\infty d_i = \overline{d_1}$ on the first level $l=1$ of SRMG is sufficient to guarantee an accurate solution on all successive patches without communication with the whole domain. 
             
@@ -555,7 +566,7 @@ $L_1$ error was computed with a ten-point Gaussian Quadrature on each patch. Eac
 Here the $L_1$ error was calculated against the true solution $\sin{2\pi x}\sin{2 \pi y} $
 
 %\begin{figure}[!htb]
-\begin{figure}[h]
+\begin{figure}[H]
 \begin{center}
   \includegraphics[scale=.5]{convergencechebsinsin.png}
   \caption{Error plateus or increases after level 1}
@@ -767,7 +778,7 @@ d_1 &> \frac{ 5\ln{2} + \ln{C} + \ln{N_0} - \ln{ \epsilon}  }{2 N_0 \pi } \\
 \end{align*}
 
 
-%We again study $\overline{d_l} = \sum_{i=l}^\infty d_i$, the total buffer required at each level to perform further refinements.
+We again study $\overline{d_l} = \sum_{i=l}^\infty d_i$, the total buffer required at each level to perform further refinements.
 
 
 \begin{align*}
@@ -780,16 +791,18 @@ d_1 &> \frac{ 5\ln{2} + \ln{C} + \ln{N_0} - \ln{ \epsilon}  }{2 N_0 \pi } \\
 \end{align*}
 
 
-An extremely important thing to note is that this analysis crucially relies on no low-frequency error being introduced by any subsequent level of SRMG. This may cause failure to converge not only on this given patch, but on any subsequent subdomain, since my analsis has shown that no method of refinement will eliminate this error. 
+An extremely important thing to note is that this analysis crucially relies on no low-frequency error being introduced by any subsequent level of SRMG (e.g. via aliasing). This may cause failure to converge not only on this given patch, but on any subsequent subdomain, since my analysis has shown that no method of refinement will eliminate this error on a subpatch once it has been introduced.  
 
-Therefore, we still must consider an implementation that remedies all sources of low-frequency error including aliasing error, interpolation error, or limitations of the basis used to represent each patch solution.
+%Therefore, we still must consider an implementation that remedies all sources of low-frequency error including aliasing error, interpolation error, or limitations of the basis used to represent each patch solution. 
+
+The requirement that no low-frequency error be introduced is a cumbersome requirement, which does not bode well for a numerical algorithm. However, the analysis here can be used to guide the requirements on a buffer region for a fixed number of SRMG levels. One or two level SRMG can reduce the memory and communication requirements significantly, allowing textbook multigrid convergence of a 2-4 $\times$ higher-resolution domain than may have been possible with traditional multigrid. 
 
 
 \subsection{Conclusion}\label{sec:conc}
 
 Previous analysis and work relied on the assumption that if each level of SRMG could guarantee error on the same order of magnitude as traditional multigrid, then it would also inherit the multigrid property that this error would be restricted to higher frequencies. This property on the frequency of error does not hold in SRMG. Even if we make the extremely optimistic assumption that we can generate the exact solution to each patch's PDE, it is clear that the error induced by the first iteration of Segmental Refinement induces error that cannot be restricted to higher frequencies. Thus, the first buffer region must grow to accomodate the final desired error. 
 
-Computational resources and/or a suitably optimized spectral solver were not available to test the newfound convergence requirements. However, we have shown here several numerical experiments and a rigorous analysis of Segmental Refinement. All are consistent with previous work, where the buffer size had to grow to accommodate further levels of SRMG. I have also shown potential solutions for this issue, although the feasibility of these solutions is yet to be determined. 
+Computational resources and/or a suitably optimized spectral solver were not available to test the newfound convergence requirements. However, we have shown here several numerical experiments and a rigorous analysis of Segmental Refinement. All are consistent with previous work, where the buffer size had to grow to accommodate further levels of SRMG. We have also shown potential solutions for this issue, although the feasibility of these solutions is yet to be determined. 
 
 Iterative Segmental Refinement only guarantees convergence if there is no reintroduction of low-frequency error via interpolation, no low-frequency error due to aliasing, and a buffer size large enough to eliminate error induced by the first (and each subsequent) artificial boundary.  
 
