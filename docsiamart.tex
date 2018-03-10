@@ -113,7 +113,7 @@
   \thanks{Submitted to the editors DATE.
 \funding{Funding information goes here.}}}
 
-\author{Jeremy Tillay%
+\author{Matthew Knepley, Jeremy Tillay%
   \thanks{Computational and Applied Mathematics, Rice University, Houston, TX (\email{jrt5493@gmail.com}).}%
 }
 
@@ -123,7 +123,7 @@
 \end{tcbverbatimwrite}
 \input{tmp_\jobname_header.tex}
 
-% Optional: Set up PDF title and authors
+% Optional: Set up PDF title and nuthors
 % \ifpdf
 % \hypersetup{ pdftitle={Guide to Using  SIAM'S \LaTeX\ Style} }
 % \fi
@@ -153,7 +153,7 @@
 \end{keywords}
 
 \begin{AMS}
- \textbf{Lookup comp math}
+ \textbf{JRT: Lookup comp math}
 \end{AMS}
 \end{tcbverbatimwrite}
 \input{tmp_\jobname_abstract.tex}
@@ -176,11 +176,11 @@ solving partial differential equations. This modified multigrid method, Segmenta
   \begin{center}
     \includegraphics[scale=0.4]{sketchsr.pdf}
   \end{center}
-  \caption*{\textbf{JRT:Get better picture} \footnotesize{Significant error is constrainted to triangular black points}}
+  \caption{\textbf{JRT:Get better picture} \footnotesize{Significant error is constrainted to triangular black points}}
 \end{wrapfigure}
 
 
-	Previous analysis and implementation demonstrated that SRMG could work for some fixed number of levels \cite{paper1}, but my work attempts to demonstrate that convergence holds for any number of levels of SRMG, so long as each level eliminates low-frequency error and further levels maintain this high-frequency accuracy. 
+	Previous analysis and implementation demonstrated that SRMG converged for a fixed number of levels \cite{paper1}, but my work attempts to demonstrate that convergence holds for any number of levels of SRMG, so long as each level eliminates low-frequency error and further levels maintain this high-frequency accuracy. 
     
 	There are two unanswered questions regarding SRMG. One is whether we have convergence guarantees in spite of communication no longer occuring between patches.  I show error induced by no longer communicating with the entire domain is localized and does not extend past the buffer regions of the domain decomposition. 
     
@@ -191,19 +191,18 @@ solving partial differential equations. This modified multigrid method, Segmenta
 \section{Background}\label{sec:backg}
 By 1982, Multigrid was an accepted numerical algorithm for solving elliptic equations \cite{earlymulti}. The speed at which multigrid solves large problems is the primary reason for its use. One of the problems with multigrid, as well as many other numerical algorithms, is that memory requirements scales linearly. 
    
-    Models of this SRMG algorithm were presented in detail as early as 1994 \cite{brandtdiskin}. However, there is still debate over what conditions must be met for the algorithm to guarauntee convergence. One question that had been left unanswered by previous research is whether Segmental Refinement can be performed an arbitrary number of times to yield arbitrarily small error. \cite{paper1}. 
+    Models of this SRMG algorithm were presented in detail as early as 1994 \cite{brandtdiskin}. However, there is still debate over what conditions must be met for the algorithm to guarauntee  multi-level convergence. One question that had been left unanswered by previous research is whether Segmental Refinement can be performed an arbitrary number of times to yield arbitrarily small error. \cite{paper1}. 
 
 	There has been proof of convergence via segmental refinement with a fixed number of levels. However this proof is unaccompanied by numerical implementation on any specific differential equations and lacks strong evidence that unlimited levels of SRMG are possible \cite{brandtdiskin}. The theory  presented showed that error induced by one level of SRMG decays within the buffer region of each subdomain, but did not demonstrate that a buffer region of fixed size can still allow further levels of SRMG  without eventually inducing errors on the highest-resolution domains. However, this was an early work and still served to demonstrate that this algorithm had a potential use in reducing communication complexity during the last few stages of refinement when performing multigrid. In and of itself, this provided a significant, powerful use. Yet, it left unanswered the full potential of SRMG.
     
    
-    In 2015, an actual implementation was investigated \cite{paper1}. A communication model was proposed once again in depth, and with an accompanying numerical implementation, provided very strong support that SRMG had potential as a low-memory but reliable partial differential equation solver.
+    In 2015, multigrid was studied and the implementation used to study it was provided \cite{paper1}. A communication model was proposed once again in depth, and with an accompanying numerical implementation, provided very strong support that SRMG had potential as a low-memory but reliable partial differential equation solver.
     
     In their work, the researchers discovered that convergence depended on an additional parameter not previously considered \cite{paper1}. In their  implementation of SRMG, the authors found that increasing the resolution of the coarsest level on which SRMG is used proportionally decreased the error induced by SRMG and also the buffer region required to achieve convergence on the interior of each subdomain. Previous analysis made no connection between the resolution on the coarsest grid and the error induced by subsequent levels of SRMG.
     
     Still, there was no evidence suggesting segmental refinement could or could not be performed indefinitely. Errors in the 2015 implementation grew beyond acceptable levels unless the buffer size grew as compensation \cite{paper1}. Increasing the buffer size also increases the memory requirements and computational complexity of SRMG. Therefore, a requirement that buffer size grow with the number of SRMG levels would undermine the advantages offered by using this algorithm in place of parallel multigrid. It was also not clear what was causing convergence failures under different circumstances, and whether they could be ameliorated while preserving the low-memory, high-speed properties of SRMG. 
     
     My work builds upon this body of previous work by approaching the analysis of the algorithm from a new perspective, showing that convergence depends on the frequency of accuracy on the coarsest level. In order for SRMG to be effective, one must eliminate all low-frequency errors on coarser patches. This high-frequency accuracy requirement motivated the implementation of a spectral method coupled with SRMG to investigate the convergence of SRMG. Spectral solvers allow exact interpolation via injection, eliminating at least one possible source of low-frequency error: interpolation error. 
-   
     
     Even when eliminating the possibility of interpolation error, convergence failed. There were many possible causes, including aliasing error. I performed a second, more abstract analysis in light of these results, which explored convergence without considering any specific solver, interpolation operator, or restriction operator. Error induced by the first set of artificial boundary conditions, which is imposed on patches generated the first level of SRMG, cannot not be eliminated by refinement, only by increasing coarsest resolution or buffer size.
     
@@ -308,7 +307,7 @@ As one moves from the top boundary, the solution to this problem decays exponent
 
 %\jeremy{Prove: that the max Fourier coefficient of $\Phi$ can never exceed that of $g$ since the Laplacian is smoothing.} 
 % MGK NOT NOT UNDERSTAND: May also need to use parsevals due to aliasing
-Thus we have the bound
+Thus we derive the following bound:
 \begin{align*}
 \left|E_n(x, y)\right| &\leq \frac{2 B_n}{L \sinh(n\pi)} \sinh\left(\frac{n \pi y}{L}\right) \\
 &\leq \frac{4 B_n}{L \cdot exp(n\pi)} exp({\frac{n \pi y}{L}}) \\
